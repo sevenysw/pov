@@ -30,8 +30,12 @@ int W[] = {1,1,1,1,0, 0,0,1,1,0, 1,1,1,1,0};
 int X[] = {1,1,0,1,1, 0,0,1,0,0, 1,1,0,1,1};
 int Y[] = {1,1,0,0,0, 0,0,1,0,0, 1,1,1,1,1};
 int Z[] = {1,0,0,1,1, 1,0,1,0,1, 1,1,0,0,1};
+
+float v = 50.8;  //round per minute
+const int echo = 9;        // 反馈信号
 int letterSpace;
 int dotTime;
+float k = 0.5*1.061;
 void setup()
 {
   // setting the ports of the leds to OUTPUT
@@ -40,12 +44,22 @@ void setup()
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
   pinMode(6, OUTPUT);
- 
+  pinMode(echo, INPUT);
+  //反馈端口设置为输入
+  Serial.begin(9600);
   // defining the space between the letters (ms)
-  letterSpace = 26;
-  // defining the time dots appear (ms)
-  dotTime = 15;
+
 }
+
+void checkv(void){
+    long IntervalTime=0; //定义一个时间变量
+    long t2 = 0;
+    IntervalTime=pulseIn(echo, HIGH);//用自带的函数采样反馈的高电平的宽度，单位ms，电机模块有个圆盘，盘上有4个条形孔
+    t2 = pulseIn(echo,HIGH);
+    IntervalTime = IntervalTime + t2;
+    v=60000000.0/IntervalTime; //使用浮点计算出r/min
+}
+
 void printLetter(int letter[])
 {
   int y;
@@ -87,8 +101,18 @@ void printLetter(int letter[])
 }
 void loop()
 {
-  // you can print your own text by modifing here :) 
-  printLetter(C);
+  delay(2000);
+  checkv();
+  
+  letterSpace = 50000.0/19.0/v*k;
+  dotTime = 30000.0/19.0/v*k;
+  Serial.println(v);
+  Serial.println(letterSpace);
+  Serial.println(dotTime);
+  
+  while(true){
+     printLetter(C);
+  }
   //printLetter(N);
   //printLetter(_);
   
